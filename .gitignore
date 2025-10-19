@@ -1,0 +1,11 @@
+# Created by `dart pub`
+.dart_tool/
+
+# FVM Version Cache
+.fvm/
+
+# VS Code files
+.vscode/
+
+# bot configuration files
+**/config.yaml

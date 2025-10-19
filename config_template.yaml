@@ -1,0 +1,12 @@
+# INSTRUCTIONS
+# Copy this file and rename it to config.yaml,
+# adding it next to the executable of your bot:
+# * If you're running the bot with dart, put the file in `bin/config.yaml`
+# * If you're running a compiled executable, put the file in the same dir
+bot:
+  token: "YOUR_TOKEN_HERE"
+  # allowed_users:
+  #   - user_id
+
+real_debrid:
+  token: "YOUR_API_PRIVATE_TOKEN_HERE"
