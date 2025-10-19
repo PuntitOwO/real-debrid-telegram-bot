@@ -25,6 +25,19 @@ class RealDebrid {
     }
     return RealDebridUser.fromJson(response.data);
   }
+
+  Future<void> convertPoints() async {
+    final response = await _dio.post("/settings/convertPoints");
+    // handle errors
+    switch (response.statusCode) {
+      case 401:
+        throw RealDebridError.badToken;
+      case 403:
+        throw RealDebridError.permissionDenied;
+      case 503:
+        throw RealDebridError.serviceUnavailable;
+    }
+  }
 }
 
 class RealDebridUser {

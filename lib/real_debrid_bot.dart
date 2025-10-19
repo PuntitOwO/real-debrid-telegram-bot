@@ -17,6 +17,7 @@ class RealDebridBot {
   void setupCommands() {
     _bot.command("start", startHandler);
     _bot.command("user", userHandler);
+    _bot.command("convertPoints", pointsHandler);
   }
 
   Future<void> start() => _bot.start();
@@ -46,6 +47,24 @@ class RealDebridBot {
         RealDebridError.badToken => "Error: bad token (expired or invalid)",
         RealDebridError.permissionDenied =>
           "Error: permission denied (account locked)",
+        _ => "Unknown error (${error.code})",
+      };
+      await ctx.reply(errorMessage);
+    }
+  }
+
+  Future<void> pointsHandler(Context ctx) async {
+    try {
+      await ctx.sendTyping();
+      await _realDebrid.convertPoints();
+      await ctx.reply("Done! check your new expiration date using /user");
+    } on RealDebridError catch (error) {
+      final errorMessage = switch (error) {
+        RealDebridError.badToken => "Error: bad token (expired or invalid)",
+        RealDebridError.permissionDenied =>
+          "Error: permission denied (account locked)",
+        RealDebridError.serviceUnavailable => "Error: not enough points",
+        // _ => "Unknown error (${error.code})",
       };
       await ctx.reply(errorMessage);
     }
