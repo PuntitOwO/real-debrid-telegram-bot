@@ -1,5 +1,7 @@
+import 'package:real_debrid/raw_api_extensions.dart';
 import 'package:real_debrid/real_debrid.dart';
 import 'package:real_debrid/real_debrid_error.dart';
+import 'package:televerse/telegram.dart';
 import 'package:televerse/televerse.dart';
 
 class RealDebridBot {
@@ -18,6 +20,7 @@ class RealDebridBot {
     _bot.command("start", startHandler);
     _bot.command("user", userHandler);
     _bot.command("convertPoints", pointsHandler);
+    _bot.command("download", downloadHandler);
   }
 
   Future<void> start() => _bot.start();
@@ -68,5 +71,55 @@ class RealDebridBot {
       };
       await ctx.reply(errorMessage);
     }
+  }
+
+  Future<void> downloadHandler(Context ctx) async {
+    try {
+      final args = ctx.args;
+      if (args.isEmpty) {
+        _downloadInfoHandler(ctx);
+        return;
+      }
+      String link = args.first;
+      String pass = "";
+      if (args.last.startsWith("pass:")) {
+        pass = args.last.replaceFirst("pass:", "");
+      }
+      final downloadLink = await _realDebrid.download(link, pass);
+      final parsedSize = downloadLink.filesize == 0
+          ? "unknown size"
+          : "${downloadLink.filesize ~/ 1000000}MB";
+      final message =
+          "${downloadLink.mimeType} file ready:\n"
+          "${downloadLink.filename} ($parsedSize)\n"
+          "Original host: ${downloadLink.host}";
+      ctx.reply(
+        message,
+        replyMarkup: InlineKeyboard().url("download", downloadLink.download),
+      );
+    } on RealDebridError catch (error) {
+      final errorMessage = switch (error) {
+        RealDebridError.badToken => "Error: bad token (expired or invalid)",
+        RealDebridError.permissionDenied =>
+          "Error: permission denied (account locked)",
+        _ => "Unknown error (${error.code})",
+      };
+      await ctx.reply(errorMessage);
+    }
+  }
+
+  Future<void> _downloadInfoHandler(Context ctx) async {
+    final message =
+        "Use /download to generate an unrestricted link for valid hosters\n"
+        "Usage:\n"
+        " \\* `/download`: show this message and get supported hosts list\n"
+        " \\* `/download <link\\> [pass:password]`: generate an unrestricted link\n"
+        " If file has password, add pass:<password\\> as a second parameter\n";
+    await ctx.reply(message, parseMode: ParseMode.markdownV2);
+    final hosts = await _realDebrid.hosts;
+    hosts.sort((a, b) => a.name.compareTo(b.name));
+    final hostsMessage = StringBuffer("Available hosts:\n");
+    hostsMessage.writeAll(hosts.map((h) => "* ${h.name}"), "\n");
+    ctx.api.sendLongMessage(ctx.id, hostsMessage.toString());
   }
 }

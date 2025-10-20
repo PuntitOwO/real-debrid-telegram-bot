@@ -1,6 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:real_debrid/real_debrid_error.dart';
 
+part 'real_debrid_user.dart';
+part 'real_debrid_download.dart';
+part 'real_debrid_host.dart';
+
 class RealDebrid {
   final String token;
   final Dio _dio;
@@ -26,6 +30,15 @@ class RealDebrid {
     return RealDebridUser.fromJson(response.data);
   }
 
+  Future<List<RealDebridHost>> get hosts async {
+    final response = await _dio.get("/hosts");
+    final hosts = response.data as Map<String, dynamic>;
+    return <RealDebridHost>[
+      for (final url in hosts.keys)
+        RealDebridHost.fromJsonAndUrl(url, hosts[url]),
+    ];
+  }
+
   Future<void> convertPoints() async {
     final response = await _dio.post("/settings/convertPoints");
     // handle errors
@@ -38,75 +51,23 @@ class RealDebrid {
         throw RealDebridError.serviceUnavailable;
     }
   }
-}
 
-class RealDebridUser {
-  final int id;
-  final String username;
-  final String email;
-  final String locale;
-  final String expiration;
-
-  /// User type, see [RealDebridUserType]
-  final RealDebridUserType type;
-
-  /// User fidelity points
-  final int points;
-
-  /// User avatar Url
-  final String avatar;
-
-  /// User premium time left in seconds
-  final int premium;
-
-  const RealDebridUser({
-    required this.id,
-    required this.username,
-    required this.email,
-    required this.locale,
-    required this.expiration,
-    required this.type,
-    required this.points,
-    required this.avatar,
-    required this.premium,
-  });
-
-  Duration get premiumTimeLeft => Duration(seconds: premium);
-  DateTime get expirationDate => DateTime.parse(expiration);
-
-  RealDebridUser.fromJson(Map<String, dynamic> json)
-    : id = json["id"] as int,
-      points = json["points"] as int,
-      premium = json["premium"] as int,
-      username = json["username"] as String,
-      email = json["email"] as String,
-      locale = json["locale"] as String,
-      avatar = json["avatar"] as String,
-      expiration = json["expiration"] as String,
-      type = RealDebridUserType.fromJson(json["type"] as String);
-
-  @override
-  String toString() {
-    final buffer = StringBuffer("RealDebridUser:");
-    buffer.writeAll([
-      username,
-      email,
-      id,
-      type.name,
-      expirationDate,
-      "${premiumTimeLeft.inDays}d",
-    ], "|");
-    return buffer.toString();
+  Future<RealDebridDownload> download(String link, String pass) async {
+    final response = await _dio.post(
+      "/unrestrict/link",
+      data: FormData.fromMap({
+        "link": link,
+        if (pass.isNotEmpty) "password": pass,
+        "remote": 0,
+      }),
+    );
+    // handle errors
+    switch (response.statusCode) {
+      case 401:
+        throw RealDebridError.badToken;
+      case 403:
+        throw RealDebridError.permissionDenied;
+    }
+    return RealDebridDownload.fromJson(response.data);
   }
-}
-
-enum RealDebridUserType {
-  free,
-  premium;
-
-  static RealDebridUserType fromJson(String value) => switch (value) {
-    "premium" => premium,
-    "free" => free,
-    _ => free,
-  };
 }

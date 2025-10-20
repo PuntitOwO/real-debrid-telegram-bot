@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
-import 'package:real_debrid/real_debrid.dart';
 import 'package:real_debrid/real_debrid_bot.dart';
 import 'package:yaml/yaml.dart';
 
@@ -19,6 +18,4 @@ void main(List<String> arguments) async {
     realDebridToken: realDebridToken,
   );
   await realDebridBot.start();
-  // final realDebrid = RealDebrid(token: realDebridToken);
-  // print(await realDebrid.user);
 }
