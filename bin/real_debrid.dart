@@ -11,11 +11,12 @@ void main(List<String> arguments) async {
   final file = File(configFilePath);
   final Map yaml = loadYaml(file.readAsStringSync());
   final String telegramBotToken = yaml["bot"]["token"];
-  // final List<String> allowedUsers = yaml["bot"]["allowed_users"];
+  final List<int> allowedUsers = yaml["bot"]["allowed_users"].cast<int>();
   final String realDebridToken = yaml["real_debrid"]["token"];
   final realDebridBot = RealDebridBot(
     telegramBotToken: telegramBotToken,
     realDebridToken: realDebridToken,
+    allowedIDs: allowedUsers,
   );
   await realDebridBot.start();
 }

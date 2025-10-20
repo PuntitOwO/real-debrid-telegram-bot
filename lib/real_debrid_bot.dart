@@ -1,3 +1,4 @@
+import 'package:real_debrid/allow_list_middleware.dart';
 import 'package:real_debrid/raw_api_extensions.dart';
 import 'package:real_debrid/real_debrid.dart';
 import 'package:real_debrid/real_debrid_error.dart';
@@ -7,16 +8,22 @@ import 'package:televerse/televerse.dart';
 class RealDebridBot {
   final Bot _bot;
   final RealDebrid _realDebrid;
+  final AllowListMiddleware _allowListMiddleware;
 
   RealDebridBot({
     required String telegramBotToken,
     required String realDebridToken,
+    List<int> allowedIDs = const <int>[],
   }) : _bot = Bot(telegramBotToken),
-       _realDebrid = RealDebrid(token: realDebridToken) {
-    setupCommands();
+       _realDebrid = RealDebrid(token: realDebridToken),
+       _allowListMiddleware = AllowListMiddleware(allowedIDs) {
+    setupBot();
   }
 
-  void setupCommands() {
+  void setupBot() {
+    if (_allowListMiddleware.allowedIDs.isNotEmpty) {
+      _bot.plugin(_allowListMiddleware);
+    }
     _bot.command("start", startHandler);
     _bot.command("user", userHandler);
     _bot.command("convertPoints", pointsHandler);
