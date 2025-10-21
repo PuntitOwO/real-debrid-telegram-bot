@@ -7,6 +7,11 @@ bot:
   token: "YOUR_TOKEN_HERE"
   # allowed_users:
   #   - user_id # <- this should be an int
+  webhook:
+    enabled: false # set to true to use webhook instead of polling
+    url: "https://example.com/webhook" # replace with your domain endpoint
+    port: 8080 # port to listen to
+    # TODO: add more parameters following https://pub.dev/documentation/televerse/latest/televerse/Bot/startWebhook.html
 
 real_debrid:
   token: "YOUR_API_PRIVATE_TOKEN_HERE"

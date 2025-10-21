@@ -32,6 +32,9 @@ class RealDebridBot {
 
   Future<void> start() => _bot.start();
 
+  Future<void> startWebhook(String url, int port) =>
+      _bot.startWebhook(webhookUrl: url, port: port);
+
   // -------------------------- HANDLERS --------------------------
 
   Future<void> startHandler(Context ctx) async {

@@ -18,5 +18,12 @@ void main(List<String> arguments) async {
     realDebridToken: realDebridToken,
     allowedIDs: allowedUsers,
   );
-  await realDebridBot.start();
+  final bool webhookEnabled = yaml["bot"]["webhook"]["enabled"];
+  if (!webhookEnabled) {
+    await realDebridBot.start();
+  } else {
+    final String webhookUrl = yaml["bot"]["webhook"]["url"];
+    final int port = yaml["bot"]["webhook"]["port"];
+    await realDebridBot.startWebhook(webhookUrl, port);
+  }
 }
